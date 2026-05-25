@@ -1,10 +1,11 @@
 import numpy as np
 
 import gymnasium as gym
-from gymnasium import ActionWrapper, ObservationWrapper, RewardWrapper, Wrapper
-from gymnasium.spaces import Box, Discrete
+from gymnasium import ObservationWrapper
+from gymnasium.spaces import Box
 
 import cv2
+import vizdoom.gymnasium_wrapper  # Register Vizdoom environments
 
 class WMWrapper(ObservationWrapper):
     def __init__(self, env):
@@ -14,7 +15,6 @@ class WMWrapper(ObservationWrapper):
     def observation(self, obs):
         if isinstance(obs, dict):
             img = obs["screen"] # For doom
-            
         else:
             img = obs
     
@@ -25,10 +25,8 @@ class WMWrapper(ObservationWrapper):
         
         return final_obs
         
-def make_env(env_name="VizdoomCorridor-v0"):
+def make_env(env_name="VizdoomTakeCover-v1"):
     env = gym.make(env_name)
-    
-    env = DoomWrapper(env)
-    
+    env = WMWrapper(env)
     return env
     
