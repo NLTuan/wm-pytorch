@@ -2,9 +2,6 @@ import torch
 from torch import nn, optim
 import torch.nn.functional as F
 
-import gymnasium as gym
-from vizdoom import gymnasium_wrapper
-
 class UpsampleThenConv(nn.Module):
     def __init__(self, shape, fan_in, fan_out, kernel_size):
         super().__init__()
