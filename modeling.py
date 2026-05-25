@@ -16,7 +16,7 @@ class UpsampleThenConv(nn.Module):
         return self.conv(x)
 
 class VAE(nn.Module):
-    def __init__(self):
+    def __init__(self, latent_dim=32):
         super().__init__() 
         self.encoder = nn.Sequential(
             nn.Conv2d(3, 32, kernel_size=4, stride=2),   # 64x64x3  -> 31x31x32
@@ -29,10 +29,10 @@ class VAE(nn.Module):
             nn.ReLU(),
             nn.Flatten()                                 # Flattens out to 1024 (2*2*256)
         )
-        self.mu_dense = nn.Linear(2 * 2 * 256, 32)
-        self.log_sigma_dense = nn.Linear(2 * 2 * 256, 32)
+        self.mu_dense = nn.Linear(2 * 2 * 256, latent_dim)
+        self.log_sigma_dense = nn.Linear(2 * 2 * 256, latent_dim)
         
-        self.z_to_convdense = nn.Linear(32, 1024)
+        self.z_to_convdense = nn.Linear(latent_dim, 1024)
         
         self.decoder = nn.Sequential(
             UpsampleThenConv(5, 1024, 128, 5),
@@ -46,15 +46,8 @@ class VAE(nn.Module):
         )
     
     def forward(self, x, get_loss=False):
-        encoder_out = self.encoder(x)
-
-        mu = self.mu_dense(encoder_out)
-        log_sigma = self.log_sigma_dense(encoder_out)
-        sigma = torch.exp(log_sigma)
+        z, mu, log_sigma = self.forward_z(x)
         
-        z = torch.randn_like(sigma) * sigma + mu
-        
-        z = self.z_to_convdense(z).view(-1, 1024, 1, 1)
         out = self.decoder(z)
         
         if get_loss:
@@ -65,3 +58,47 @@ class VAE(nn.Module):
             return out, loss, z
         
         return out, z
+    
+    def forward_z(self, x):
+        encoder_out = self.encoder(x)
+
+        mu = self.mu_dense(encoder_out)
+        log_sigma = self.log_sigma_dense(encoder_out)
+        sigma = torch.exp(log_sigma)
+        
+        z = torch.randn_like(sigma) * sigma + mu
+        
+        z = self.z_to_convdense(z).view(-1, 1024, 1, 1)
+        return z, mu, log_sigma
+        
+    
+class MDN_RNN(nn.Module):
+    def __init__(self, action_dim, latent_dim=32, hidden_dim=128, num_mixtures=5):
+        self.lstm = nn.LSTM(action_dim + latent_dim, hidden_dim, batch_first=True)
+        
+        self.fc_mu = nn.Linear(hidden_dim, num_mixtures * latent_dim)
+        self.fc_sigma = nn.Linear(hidden_dim, num_mixtures * latent_dim)
+        self.fc_pi = nn.Linear(hidden_dim, num_mixtures)
+        
+    def forward(self, z, a, h=None):
+        inputs = torch.cat([z, a], dim=-1)
+        
+        y, h = self.lstm(inputs, h)
+        
+        pi = self.fc_pi(y)
+        mu = self.fc_mu(y)
+        sigma = self.fc_sigma(y)
+        im stil
+        mu = mu.view(-1, y.size(1),)
+
+class Controller(nn.Module):
+    def __init__(self, action_dim, latent_dim, hidden_state_dim):
+        self.net = nn.Sequential(
+            nn.Linear(latent_shape + hidden_state_dim, action_dim)
+            nn.Tanh()
+        ) 
+            
+    def forward(self, z, h):
+        inp = torch.cat([z, h], dim=1)
+        return self.net(inp)
+    
