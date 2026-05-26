@@ -2,7 +2,7 @@ import os
 import numpy as np
 from wm.env import make_env
 
-DATA_DIR = 'data'
+DATA_DIR = 'data/episodes'
 NUM_EPS = 1000
 ENV_NAME = "VizdoomTakeCover-v1"
 
