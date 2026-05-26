@@ -222,3 +222,5 @@ __marimo__/
 # World Models Data & Checkpoints
 data/
 checkpoints/
+
+_vizdoom.ini
