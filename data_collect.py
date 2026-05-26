@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from env import make_env
+from wm.env import make_env
 
 DATA_DIR = 'data'
 NUM_EPS = 1000

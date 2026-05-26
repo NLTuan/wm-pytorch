@@ -29,4 +29,3 @@ def make_env(env_name="VizdoomTakeCover-v1"):
     env = gym.make(env_name)
     env = WMWrapper(env)
     return env
-    

@@ -3,7 +3,7 @@ import glob
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
-from modeling import VAE
+from wm.modeling import VAE
 
 # Configuration
 DATA_DIR = "data"
