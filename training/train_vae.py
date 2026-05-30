@@ -46,8 +46,7 @@ def train():
         
         for batch_idx, x in enumerate(dataloader):
             x = x.to(DEVICE)
-            
-            out, loss, z_flat = model(x, get_loss=True)
+            out, loss, z = model(x, get_loss=True)
             
             optimizer.zero_grad()
             loss.backward()

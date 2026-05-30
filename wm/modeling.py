@@ -43,18 +43,18 @@ class VAE(nn.Module):
         )
     
     def forward(self, x, get_loss=False):
-        z, mu, log_sigma, z_flat = self.forward_z(x)
+        mu, log_sigma, z = self.forward_z(x)
         
-        out = self.decoder(z)
+        out = self.forward_decoder(z)
         
         if get_loss:
             recon_loss = F.mse_loss(out, x, reduction='sum') / x.size(0)
             
             kl_loss = -0.5 * torch.sum(1 + 2 * log_sigma - mu.pow(2) - (2 * log_sigma).exp(), dim=1).mean()
             loss = recon_loss + kl_loss
-            return out, loss, z_flat
+            return out, loss, z
         
-        return out, z_flat
+        return out, z
     
     def forward_z(self, x):
         encoder_out = self.encoder(x)
@@ -65,13 +65,11 @@ class VAE(nn.Module):
         
         z = torch.randn_like(sigma) * sigma + mu
         
-        # Flattened z for RNN/Controller
-        z_flat = z.clone()
+        return mu, log_sigma, z
         
-        z = self.z_to_convdense(z).view(-1, 1024, 1, 1)
-        return z, mu, log_sigma, z_flat
-        
-        
+    def forward_decoder(self, z):
+        decoder_input = self.z_to_convdense(z).view(-1, 1024, 1, 1)
+        return self.decoder(decoder_input)
     
 class MDN_RNN(nn.Module):
     def __init__(self, action_dim, latent_dim=32, hidden_dim=256, num_mixtures=5, tau=1.0):

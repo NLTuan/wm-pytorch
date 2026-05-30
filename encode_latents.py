@@ -28,7 +28,7 @@ def encode_latents(vae, path_to_encode='data/', path_to_store='data_z/'):
             obs_tensor = obs_tensor.permute(0, 3, 1, 2)
             
             with torch.no_grad():
-                out, z_flat = vae(obs_tensor)
+                _, _, _, z_flat = vae.forward_z(obs_tensor)
 
             # Move latents back to CPU and save along with other rollout data
             torch.save({
